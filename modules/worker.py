@@ -15,7 +15,7 @@ class Worker:
         self.gpu = args['gpu']
         self.secure = args['secure']
         self.clipping = args['clipping']
-        if self.clipping == 1:
+        if self.clipping == 1 and self.secure:
             self.train_criterion = nn.CrossEntropyLoss(reduction='none')
         else:
             self.train_criterion = nn.CrossEntropyLoss()

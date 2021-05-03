@@ -112,9 +112,9 @@ class Metrics:
         self.acc_on_eval_data = [0] * num_rounds
 
         self.result_path = mkdir(os.path.join('./result', self.args['dataset']))
-        prefix = 'S{}_eps{:.4f}_delt{:.4f}__clip{}_{:.3f}__SS{}_Gamma{:.3f}_lrs{}_bs{}'.format(int(args['secure']), 
-                 args['secure_epsilon'], args['secure_delta'], int(args['clipping']), args['secure_clip'], 
-                 int(args['subsampling']), args['subsampling_gamma'], args['lr_sched'], args['bs'])
+        prefix = '{}_S{}_eps{:.4f}_delt{:.4f}__clip{}_{:.3f}__SS{}_Gamma{:.3f}_lrs{}_bs{}'.format(args['model'], 
+                 int(args['secure']), args['secure_epsilon'], args['secure_delta'], int(args['clipping']), 
+                 args['secure_clip'], int(args['subsampling']), args['subsampling_gamma'], args['lr_sched'], args['bs'])
         if args['quantize'] == False:
             suffix = 'E{}_M{}_s{}_R{}'.format(args['local_iters'], args['clients_per_round'], 100, args['num_round'])
         else:

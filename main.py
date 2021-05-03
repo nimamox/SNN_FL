@@ -37,7 +37,7 @@ def main():
     args['gpu'] = args['gpu'] and torch.cuda.is_available()
 
 
-    args['secure'] = True
+    args['secure'] = False
     args['secure_epsilon'] = 1.0
     args['secure_delta'] = 10e-4
 
