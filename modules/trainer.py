@@ -6,7 +6,7 @@ import json
 import os
 from tqdm import tqdm
 
-from modules.model import Model
+from modules.model import Model, ModelSNN
 from modules.optimizer import SGD
 from modules.worker import Worker
 from modules.client import Client
@@ -35,8 +35,15 @@ class Trainer:
             self.delta = args['secure_delta']
             
 
-        self.model = Model(args)
-        self.move_model_to_gpu(self.model, args)
+        if args['model'] == 'logistic':
+            self.model = Model(args)
+            self.move_model_to_gpu(self.model, args)
+            
+        elif args['model'] == 'snn':
+            self.model = ModelSNN(args)
+        else:
+            raise Exception('Invalid Model')
+        
         self.optimizer = SGD(self.model.parameters(), lr=args['lr'], weight_decay=args['wd'])
         self.worker = Worker(self.model, self.optimizer, args)
         self.clients = self.setup_clients(dataset)
@@ -53,7 +60,7 @@ class Trainer:
             model.cuda()
             print('>>> Use gpu on device {}'.format(device))
         else:
-            print('>>> Don not use gpu')
+            print('>>> Do not use gpu')
 
     def setup_clients(self, dataset):
         users, train_data, test_data = dataset
@@ -62,7 +69,7 @@ class Trainer:
         for user in users:
             self.all_train_data_size += len(train_data[user])
             c = Client(user, train_data[user], test_data[user], self.bs, self.worker,
-                       self.subsampling, self.gamma)
+                       self.subsampling, self.gamma, self.args)
             all_clients.append(c)
         return all_clients
 

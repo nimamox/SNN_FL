@@ -1,7 +1,6 @@
 import torch
 import numpy as np
-#import pickle
-import hickle as hkl 
+import pickle
 import os
 import torchvision
 cpath = os.path.dirname(__file__)
@@ -138,8 +137,8 @@ def main():
                 test_y[user] += (d * np.ones(l)).tolist()
 
         print('>>> Set data path for MNIST.')
-        train_path = '{}/data/train/{}_digits_per_client/{}_digits_per_client.hkl'.format(cpath, NUM_DIGITS_PER_USER, NUM_DIGITS_PER_USER)
-        test_path = '{}/data/test/{}_digits_per_client/{}_digits_per_client.hkl'.format(cpath, NUM_DIGITS_PER_USER, NUM_DIGITS_PER_USER)
+        train_path = '{}/data/train/{}_digits_per_client/{}_digits_per_client.pkl'.format(cpath, NUM_DIGITS_PER_USER, NUM_DIGITS_PER_USER)
+        test_path = '{}/data/test/{}_digits_per_client/{}_digits_per_client.pkl'.format(cpath, NUM_DIGITS_PER_USER, NUM_DIGITS_PER_USER)
 
         dir_path = os.path.dirname(train_path)
         if not os.path.exists(dir_path):
@@ -168,9 +167,9 @@ def main():
 
         if SAVE:
             with open(train_path, 'wb') as outfile:
-                hkl.dump(train_data, outfile)
+                pickle.dump(train_data, outfile)
             with open(test_path, 'wb') as outfile:
-                hkl.dump(test_data, outfile)
+                pickle.dump(test_data, outfile)
 
             print('>>> Save data.')
 

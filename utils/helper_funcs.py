@@ -7,15 +7,24 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from PIL import Image
 
+
 __all__ = ['mkdir', 'read_data', 'Metrics', "MiniDataset"]
 
+
+class IterableAdapter:
+    def __init__(self, iterator_factory):
+        self.iterator_factory = iterator_factory
+
+    def __iter__(self):
+        return self.iterator_factory()
+    
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
     return path
 
 
-def read_data(train_data_dir, test_data_dir, key=None):
+def read_data(train_data_dir, test_data_dir, args, key=None):
     """Parses data in given train and test data directories
 
     Assumes:
@@ -52,7 +61,10 @@ def read_data(train_data_dir, test_data_dir, key=None):
         train_data.update(cdata['user_data'])
 
     for cid, v in train_data.items():
-        train_data[cid] = MiniDataset(v['x'], v['y'])
+        if args['model'] == 'snn':
+            train_data[cid] = MiniDataset(v['x'], v['y'])
+        else:
+            train_data[cid] = MiniDataset(v['x'], v['y'])
 
     test_files = os.listdir(test_data_dir)
     test_files = [f for f in test_files if f.endswith('.pkl')]
@@ -68,44 +80,26 @@ def read_data(train_data_dir, test_data_dir, key=None):
         test_data.update(cdata['user_data'])
 
     for cid, v in test_data.items():
-        test_data[cid] = MiniDataset(v['x'], v['y'])
+        if args['model'] == 'snn':
+            test_data[cid] = MiniDataset(v['x'], v['y'])
+        else:
+            test_data[cid] = MiniDataset(v['x'], v['y'])
 
     clients = list(sorted(train_data.keys()))
 
     return clients, train_data, test_data
 
-
-class MiniDataset(Dataset):
+class SpikeDataset(Dataset):
     def __init__(self, data, labels):
-        super(MiniDataset, self).__init__()
+        super(SpikeDataset, self).__init__()
         self.data = np.array(data)
         self.labels = np.array(labels).astype("int64")
 
-        if self.data.ndim == 4 and self.data.shape[3] == 3:
-            self.data = self.data.astype("uint8")
-            self.transform = transforms.Compose(
-                [transforms.RandomHorizontalFlip(),
-                 transforms.RandomCrop(32, 4),
-                 transforms.ToTensor(),
-                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                 ]
-            )
-        elif self.data.ndim == 4 and self.data.shape[3] == 1:
-            self.transform = transforms.Compose(
-                [transforms.ToTensor(),
-                 transforms.Normalize((0.1307,), (0.3081,))
-                 ]
-            )
-        elif self.data.ndim == 3:
-            self.data = self.data.reshape(-1, 28, 28, 1).astype("uint8")
-            self.transform = transforms.Compose(
-                [transforms.ToTensor(),
-                 transforms.Normalize((0.1307,), (0.3081,))
-                 ]
-            )
-        else:
-            self.data = self.data.astype("float32")
-            self.transform = None
+        self.data = self.data.astype("float32")
+        self.ed = encode_data(self.data[:10,:], self.labels[:10], 
+                         nb_units=self.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
+                         external_ISI_cache=ISI_external_cache, batch_size=1)        
+        self.transform = None
 
     def __len__(self):
         return len(self.labels)
@@ -113,11 +107,23 @@ class MiniDataset(Dataset):
     def __getitem__(self, index):
         data, target = self.data[index], self.labels[index]
 
-        if self.data.ndim == 4 and self.data.shape[3] == 3:
-            data = Image.fromarray(data)
+        return data, target
+        
 
-        if self.transform is not None:
-            data = self.transform(data)
+class MiniDataset(Dataset):
+    def __init__(self, data, labels):
+        super(MiniDataset, self).__init__()
+        self.data = np.array(data)
+        self.labels = np.array(labels).astype("int64")
+
+        self.data = self.data.astype("float32")
+        self.transform = None
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, index):
+        data, target = self.data[index], self.labels[index]
 
         return data, target
 

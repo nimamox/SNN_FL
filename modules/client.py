@@ -3,8 +3,16 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Subset
 import numpy as np
 
+from utils.helper_funcs import IterableAdapter
+
+from NeuralEncBenchmark.surrogate_encoder import encode_data
+from NeuralEncBenchmark.sparse_data_generator import sparse_generator
+
+ISI_external_cache = {}
+
 class Client:
-    def __init__(self, cid, train_data, test_data, bs, worker, subsampling=False, gamma=1.0):
+    def __init__(self, cid, train_data, test_data, bs, worker, subsampling=False, gamma=1.0, args=None):
+        self.args = args
         self.cid = cid
         self.worker = worker
 
@@ -15,8 +23,21 @@ class Client:
         self.gamma = gamma
         self.bs = bs
         
-        self.train_dataloader = DataLoader(train_data, batch_size=bs, shuffle=True)
-        self.test_dataloader = DataLoader(test_data, batch_size=bs, shuffle=False)
+        if args['model'] == 'snn':
+            self.train_ed = encode_data(train_data.data, train_data.labels, 
+                                     nb_units=train_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
+                                     external_ISI_cache=ISI_external_cache, batch_size=bs)        
+            #self.train_dataloader = sparse_generator(self.train_ed, shuffle=True)
+            self.train_dataloader = IterableAdapter(lambda: sparse_generator(self.train_ed, shuffle=True))
+            
+            self.test_ed = encode_data(test_data.data, test_data.labels, 
+                                     nb_units=test_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
+                                     external_ISI_cache=ISI_external_cache, batch_size=bs)
+            #self.test_dataloader = sparse_generator(self.test_ed, shuffle=False)
+            self.test_dataloader = IterableAdapter(lambda: sparse_generator(self.test_ed, shuffle=False))
+        else:
+            self.train_dataloader = DataLoader(train_data, batch_size=bs, shuffle=True)
+            self.test_dataloader = DataLoader(test_data, batch_size=bs, shuffle=False)
 
     def get_model_params(self):
         return self.worker.get_model_params()
@@ -31,12 +52,20 @@ class Client:
         self.worker.set_flat_model_params(flat_params)
 
     def train_client(self, **kwargs):
-        if self.subsampling:
-            data_size = self.train_data.data.shape[0]
-            ind = np.random.choice(range(data_size), int(data_size * self.gamma), replace=False)
-            train_dataloader = DataLoader(Subset(self.train_data, ind), batch_size=self.bs, shuffle=True)
+        if self.args['model'] == 'snn':
+            if self.subsampling:
+                #train_dataloader = sparse_generator(self.train_ed, shuffle=True, subsampling_ratio=self.gamma)
+                train_dataloader = IterableAdapter(lambda: sparse_generator(self.train_ed, shuffle=True, subsampling_ratio=self.gamma))
+            else:
+                train_dataloader = IterableAdapter(lambda: sparse_generator(self.train_ed, shuffle=True))
+            #self.test_dataloader = sparse_generator(self.test_ed, shuffle=False)
         else:
-            train_dataloader = self.train_dataloader
+            if self.subsampling:
+                data_size = self.train_data.data.shape[0]
+                ind = np.random.choice(range(data_size), int(data_size * self.gamma), replace=False)
+                train_dataloader = DataLoader(Subset(self.train_data, ind), batch_size=self.bs, shuffle=True)
+            else:
+                train_dataloader = self.train_dataloader
         
         local_solution, worker_stats = self.worker.train(train_dataloader, **kwargs)
         return local_solution, worker_stats

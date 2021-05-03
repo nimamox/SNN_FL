@@ -8,6 +8,7 @@ mseloss = nn.MSELoss()
 
 class Worker:
     def __init__(self, model, optimizer, args):
+        self.args = args
         self.model = model
         self.optimizer = optimizer
         self.local_iters = args['local_iters']
@@ -39,7 +40,8 @@ class Worker:
         set_flat_params_to(self.model, flat_params)
 
     def train(self, train_dataloader, **kwargs):
-        self.model.train()
+        if self.args['model'] != 'snn':
+            self.model.train()
         train_loss = train_acc = train_total = 0
         
         for iter in range(self.local_iters):
@@ -47,10 +49,13 @@ class Worker:
             count = 0
             for batch_idx, (x, y) in enumerate(train_dataloader):
                 count += y.size(0)
-                if self.gpu:
-                    x, y = x.cuda(), y.cuda()
                 self.optimizer.zero_grad()
-                pred = self.model(x)
+                if self.args['model'] == 'snn':
+                    pred = self.model.run_snn_model(x.to_dense())
+                else:
+                    if self.gpu:
+                        x, y = x.cuda(), y.cuda()                    
+                    pred = self.model(x)
                 loss = self.train_criterion(pred, y)
                 if self.clipping == 1:
                     saved_var = dict()
@@ -94,19 +99,31 @@ class Worker:
         return local_soln, stat_dict
 
     def test(self, test_dataloader):
-        self.model.eval()
         test_loss = test_acc = test_total = 0.
-        with torch.no_grad():
-            for x, y in test_dataloader:
-                if self.gpu:
-                    x, y = x.cuda(), y.cuda()
-                pred = self.model(x)
-                loss = self.test_criterion(pred, y)
-                _, predicted = torch.max(pred, 1)
-                correct = predicted.eq(y).sum()
-
-                test_acc += correct.item()
-                test_loss += loss.item() * y.size(0)
-                test_total += y.size(0)
+        if self.args['model'] == 'snn':
+            with torch.no_grad():
+                for x, y in test_dataloader:
+                    pred = self.model.run_snn_model(x.to_dense())
+                    loss = self.test_criterion(pred, y)
+                    _, predicted = torch.max(pred, 1)
+                    correct = predicted.eq(y).sum()
+                    
+                    test_acc += correct.item()
+                    test_loss += loss.item() * y.size(0)
+                    test_total += y.size(0)
+        else:
+            self.model.eval()
+            with torch.no_grad():
+                for x, y in test_dataloader:
+                    if self.gpu:
+                        x, y = x.cuda(), y.cuda()
+                    pred = self.model(x)
+                    loss = self.test_criterion(pred, y)
+                    _, predicted = torch.max(pred, 1)
+                    correct = predicted.eq(y).sum()
+    
+                    test_acc += correct.item()
+                    test_loss += loss.item() * y.size(0)
+                    test_total += y.size(0)
 
         return test_acc, test_loss
