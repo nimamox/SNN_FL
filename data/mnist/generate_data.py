@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 import os
 import torchvision
-cpath = os.path.dirname(__file__)
+cpath = './' #os.path.dirname(__file__)
 
 
 NUM_USER = 100
