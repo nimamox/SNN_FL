@@ -39,7 +39,7 @@ def main():
 
     args['secure'] = False
     args['secure_epsilon'] = 1.0
-    args['secure_delta'] = 10e-4
+    args['secure_delta'] = 10e-3
 
     args['clipping'] = 2
     args['secure_clip'] = 2
@@ -51,6 +51,10 @@ def main():
     if args['secure']:
         if not args['clipping']:
             args['clipping'] = 1
+    else:
+        args['clipping'] = 0
+        args['subsampling'] = False
+        args['verbose2'] = False
 
     set_seed(args['seed'], args['gpu'])
 
