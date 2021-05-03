@@ -61,10 +61,7 @@ def read_data(train_data_dir, test_data_dir, args, key=None):
         train_data.update(cdata['user_data'])
 
     for cid, v in train_data.items():
-        if args['model'] == 'snn':
-            train_data[cid] = MiniDataset(v['x'], v['y'])
-        else:
-            train_data[cid] = MiniDataset(v['x'], v['y'])
+        train_data[cid] = MiniDataset(v['x'], v['y'])
 
     test_files = os.listdir(test_data_dir)
     test_files = [f for f in test_files if f.endswith('.pkl')]
@@ -80,35 +77,11 @@ def read_data(train_data_dir, test_data_dir, args, key=None):
         test_data.update(cdata['user_data'])
 
     for cid, v in test_data.items():
-        if args['model'] == 'snn':
-            test_data[cid] = MiniDataset(v['x'], v['y'])
-        else:
-            test_data[cid] = MiniDataset(v['x'], v['y'])
+        test_data[cid] = MiniDataset(v['x'], v['y'])
 
     clients = list(sorted(train_data.keys()))
 
-    return clients, train_data, test_data
-
-class SpikeDataset(Dataset):
-    def __init__(self, data, labels):
-        super(SpikeDataset, self).__init__()
-        self.data = np.array(data)
-        self.labels = np.array(labels).astype("int64")
-
-        self.data = self.data.astype("float32")
-        self.ed = encode_data(self.data[:10,:], self.labels[:10], 
-                         nb_units=self.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
-                         external_ISI_cache=ISI_external_cache, batch_size=1)        
-        self.transform = None
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, index):
-        data, target = self.data[index], self.labels[index]
-
-        return data, target
-        
+    return clients, train_data, test_data        
 
 class MiniDataset(Dataset):
     def __init__(self, data, labels):

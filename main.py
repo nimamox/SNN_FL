@@ -17,6 +17,7 @@ def main():
     args['dataset'] = '2_digits_per_client'
     args['model'] = 'logistic'
     args['model'] = 'snn'
+    args['nb_steps'] = 10
     args['wd'] = 0.001
     args['verbose'] = False
     args['verbose2'] = True

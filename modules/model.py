@@ -18,7 +18,7 @@ class Model(nn.Module):
     
 class ModelSNN():
     def __init__(self, args):
-        self.nb_steps = 100
+        self.nb_steps = args['nb_steps']
         self.params, self.alpha, self.beta = init_model(nb_inputs=784, nb_hidden=25, nb_outputs=10, time_step=self.nb_steps)
     def parameters(self):
         return self.params

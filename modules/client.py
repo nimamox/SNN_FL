@@ -25,14 +25,14 @@ class Client:
         
         if args['model'] == 'snn':
             self.train_ed = encode_data(train_data.data, train_data.labels, 
-                                     nb_units=train_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
-                                     external_ISI_cache=ISI_external_cache, batch_size=bs)        
+                                     nb_units=train_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=args['nb_steps'], 
+                                     TMAX=args['nb_steps'], external_ISI_cache=ISI_external_cache, batch_size=bs)        
             #self.train_dataloader = sparse_generator(self.train_ed, shuffle=True)
             self.train_dataloader = IterableAdapter(lambda: sparse_generator(self.train_ed, shuffle=True))
             
             self.test_ed = encode_data(test_data.data, test_data.labels, 
-                                     nb_units=test_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=100, TMAX=100,
-                                     external_ISI_cache=ISI_external_cache, batch_size=bs)
+                                     nb_units=test_data.data.shape[1], encoder_type="ISI_inverse", nb_steps=args['nb_steps'], 
+                                     TMAX=args['nb_steps'], external_ISI_cache=ISI_external_cache, batch_size=bs)
             #self.test_dataloader = sparse_generator(self.test_ed, shuffle=False)
             self.test_dataloader = IterableAdapter(lambda: sparse_generator(self.test_ed, shuffle=False))
         else:
