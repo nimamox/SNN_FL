@@ -56,6 +56,10 @@ class SGD(Optimizer):
     def inverse_prop_decay_learning_rate2(self, round_i, local_iters):
         for param_group in self.param_groups:
             param_group['lr'] = self.lr/(round_i * local_iters * .01 + 1)
+            
+    def inverse_prop_decay_learning_rate3(self, round_i, local_iters):
+        for param_group in self.param_groups:
+            param_group['lr'] = self.lr/(round_i * local_iters * .001 + 1)    
 
     def set_lr(self, lr):
         for param_group in self.param_groups:

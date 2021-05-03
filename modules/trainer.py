@@ -97,6 +97,11 @@ class Trainer:
                 self.optimizer.inverse_prop_decay_learning_rate(round_i, self.args['local_iters'])
             elif self.args['lr_sched']==2:
                 self.optimizer.inverse_prop_decay_learning_rate2(round_i, self.args['local_iters'])
+            elif self.args['lr_sched']==3:
+                self.optimizer.inverse_prop_decay_learning_rate3(round_i, self.args['local_iters'])
+            else:
+                raise Exception('Invalid lr_sched')
+                
 
         self.test_latest_model_on_traindata(self.num_round)
         self.test_latest_model_on_evaldata(self.num_round)

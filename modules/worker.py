@@ -19,8 +19,8 @@ class Worker:
             self.train_criterion = nn.CrossEntropyLoss(reduction='none')
         else:
             self.train_criterion = nn.CrossEntropyLoss()
-        self.clip = args['secure_clip'] 
         self.test_criterion = nn.CrossEntropyLoss()
+        self.clip = args['secure_clip'] 
 
     def get_model_params(self):
         state_dict = self.model.state_dict()
