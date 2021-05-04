@@ -18,6 +18,8 @@ confDicts = []
 
 dataset = '4_digits_per_client'
 
+#for local_iters in [1, 10]:
+
 for local_iters in [10]:
   for clients_per_round in [1, 10]:
     for epsilon in [.1, .2, .5, 1.0, 1.5, 2.0]:
@@ -59,9 +61,9 @@ for ii, cc in enumerate(confDicts):
   print(ii, command.format(exportline))
   print('ppending', pending())
   while True:
-    if pending() < 20:
+    if pending() < 5:
       break
-    time.sleep(2)
-  time.sleep(3)
+    time.sleep(5)
+  time.sleep(4)
   _ = subprocess.Popen(command.format(exportline).split())
 print()

@@ -21,7 +21,7 @@ def main():
     args['wd'] = 0.001
     args['verbose'] = False
     args['verbose2'] = True
-    args['num_iters'] = 1000
+    args['num_iters'] = 2000
     args['local_iters'] = int(os.getenv('local_iters', '10').replace("'",""))
     args['num_round'] = args['num_iters'] // args['local_iters']
     args['clients_per_round'] = int(os.getenv('clients_per_round', '10').replace("'",""))
