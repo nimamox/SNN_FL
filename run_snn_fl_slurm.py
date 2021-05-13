@@ -22,7 +22,8 @@ secure = 1
 quant = 10
 clip = 0
 
-#for quant in [1, 10, 100]:
+#for dd in range(1, 11):
+  #dataset = '{}_digits_per_client'.format(dd)
   #local_iters = 10
   #secure = 0
   #epsilon = 0
@@ -40,21 +41,23 @@ clip = 0
   #})
   
 
-#for local_iters in [1, 10, 100]:
-  #secure = 0
-  #epsilon = 0
-  #gamma = 0
-  #clip = 0
-  #confDicts.append({
-    #'dataset': dataset,
-    #'local_iters': local_iters,
-    #'clients_per_round': clients_per_round,
-    #'epsilon': epsilon,
-    #'gamma': gamma,
-    #'secure': secure,
-    #'clip': clip,
-    #'quant': quant
-  #})
+#for local_iters in [10, 20, 30, 40, 50, 60, 70, 90, 100]:
+for local_iters in [100]:
+  secure = 0
+  epsilon = 0
+  gamma = 0
+  clip = 0
+  confDicts.append({
+    'num_iters': max(local_iters * 21, 10000),
+    'dataset': dataset,
+    'local_iters': local_iters,
+    'clients_per_round': clients_per_round,
+    'epsilon': epsilon,
+    'gamma': gamma,
+    'secure': secure,
+    'clip': clip,
+    'quant': quant
+  })
 
 
 #for clients_per_round in [1, 10, 100]:
@@ -94,23 +97,23 @@ clip = 0
               #'quant': quant
             #})
 
-for local_iters in [10, 20, 30, 40, 50, 60, 70, 90, 100]:
-  for clients_per_round in [10]:
-    for epsilon in [.2, .5]:
-      for gamma in [.2, .6]:
-        for clip in [1.0]:
-          for quant in [10]:
-            confDicts.append({
-              'num_iters': local_iters * 21,
-              'dataset': dataset,
-              'local_iters': local_iters,
-              'clients_per_round': clients_per_round,
-              'epsilon': epsilon,
-              'gamma': gamma,
-              'secure': secure,
-              'clip': clip,
-              'quant': quant
-            })
+#for local_iters in [10, 20, 30, 40, 50, 60, 70, 90, 100]:
+  #for clients_per_round in [10]:
+    #for epsilon in [.2, .5]:
+      #for gamma in [.2, .6]:
+        #for clip in [1.0]:
+          #for quant in [10]:
+            #confDicts.append({
+              #'num_iters': max(local_iters * 21, 2000),
+              #'dataset': dataset,
+              #'local_iters': local_iters,
+              #'clients_per_round': clients_per_round,
+              #'epsilon': epsilon,
+              #'gamma': gamma,
+              #'secure': secure,
+              #'clip': clip,
+              #'quant': quant
+            #})
 
 
 command = "sbatch --export={} ./job_snnfl.sh"
@@ -136,7 +139,7 @@ for ii, cc in enumerate(confDicts):
   humr_fname = exportline.replace("'","").replace(',','').replace('=','')
   path_lock = os.path.join('./slurm_lock', humr_fname)
   if os.path.exists(path_lock):
-    continue
+    pass#continue
   Path(path_lock).touch()
   print(ii, command.format(exportline))
   print('ppending', pending())
