@@ -15,8 +15,9 @@ def set_seed(seed, gpu=True):
 def main():
     args = dict()
     args['dataset'] = os.getenv('dataset', '4_digits_per_client').replace("'","")
+    args['model'] = os.getenv('model', 'logistic').replace("'","")
     #args['model'] = 'logistic'
-    args['model'] = 'cnn'
+    #args['model'] = 'cnn'
     #args['model'] = 'mlp'
     #args['model'] = 'snn'
     args['nb_steps'] = int(os.getenv('nb_steps', '10').replace("'",""))
