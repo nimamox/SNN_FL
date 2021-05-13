@@ -6,7 +6,7 @@ import json
 import os
 from tqdm import tqdm
 
-from modules.model import Model, ModelSNN, CNN
+from modules.model import Model, ModelSNN, CNN, MLP
 from modules.optimizer import SGD
 from modules.worker import Worker
 from modules.client import Client
@@ -40,7 +40,10 @@ class Trainer:
             self.move_model_to_gpu(self.model, args)
         elif args['model'] == 'cnn':
             self.model = CNN(args)
-            self.move_model_to_gpu(self.model, args)            
+            self.move_model_to_gpu(self.model, args)    
+        elif args['model'] == 'mlp':
+            self.model = MLP(args)
+            self.move_model_to_gpu(self.model, args)    
             
         elif args['model'] == 'snn':
             self.model = ModelSNN(args)

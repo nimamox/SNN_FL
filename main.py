@@ -17,6 +17,7 @@ def main():
     args['dataset'] = os.getenv('dataset', '4_digits_per_client').replace("'","")
     #args['model'] = 'logistic'
     args['model'] = 'cnn'
+    #args['model'] = 'mlp'
     #args['model'] = 'snn'
     args['nb_steps'] = int(os.getenv('nb_steps', '10').replace("'",""))
     args['wd'] = 0.001
@@ -28,7 +29,7 @@ def main():
     args['clients_per_round'] = int(os.getenv('clients_per_round', '10').replace("'",""))
     args['bs'] = 64
     args['lr'] = float(os.getenv('lr', '0.2').replace("'",""))
-    args['lr_sched'] = int(os.getenv('lr_sched', '3').replace("'",""))
+    args['lr_sched'] = int(os.getenv('lr_sched', '2').replace("'",""))
     args['seed'] = 0
     args['input_shape'] = 784
     args['num_class'] = 10
